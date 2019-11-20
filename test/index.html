@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+  .grad_ex {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 32px;
+  }
+
+  .grad_ex.horizontal {
+    height: 32px;
+    margin-bottom: 32px;
+  }
+
+  .grad_ex.vertical {
+    width: 32px;
+    margin-bottom: 32px;
+  }
+
+  #controlled {
+    width: 400px;
+    height: 400px;
+    position: absolute;
+    left: 400px;
+    top: 0px;
+  }
+
+  .left {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+  }
+
+  .right {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    left: 200px;
+  }
+
+  .bottom {
+    width: 400px;
+    height: 200px;
+    position: absolute;
+    top: 200px;
+  }
+</style>
+<link rel="stylesheet" href="../src/jquery.gradientPicker.css" type="text/css"/>
+<link rel="stylesheet" href="../vendor/colorpicker/css/colorpicker.css" type="text/css"/>
+
+<script src="../node_modules/jquery/dist/jquery.js"></script>
+<script src="../node_modules/jquery-ui-dist/jquery-ui.js"></script>
+<script src="../node_modules/tinycolor2/tinycolor.js"></script>
+<script src="../vendor/colorpicker/js/colorpicker.js"></script>
+
+<script src="../src/utils.js"></script>
+<script src="../src/colorPicker.js"></script>
+<script src="../src/sliderHandler.js"></script>
+<script src="../src/slider.js"></script>
+<script src="../src/component.js"></script>
+
+<script>
+
+  import {register} from "../src/component";
+
+  register();
+
+  $(function () {
+
+		const $body = $("body");
+		const $left = $(".left");
+		const $right = $(".right");
+		const $bottom = $(".bottom");
+
+		$("#ex1").gradientPicker({
+			change: function (stops, styles) {
+				console.log('gradient changed:', stops, styles);
+				$body.css({background: styles[1]});
+
+				for (i = 0; i < styles.length; ++i) {
+					$left.css("background-image", styles[i]);
+				}
+			},
+			// fillDirection: "90deg",
+			orientation: 'vertical',
+			controlPoints: ["green 0%", "yellow 50%", "green 100%"]
+		});
+
+		$("#ex2").gradientPicker({
+			change: function (stops, styles) {
+				for (i = 0; i < styles.length; ++i) {
+					$right.css("background-image", styles[i]);
+				}
+			},
+			fillDirection: "45deg",
+			controlPoints: ["green 0%", "orange 100%"]
+		});
+
+		$("#ex3").gradientPicker({
+			type: "radial",
+			change: function (stops, styles) {
+				for (i = 0; i < styles.length; ++i) {
+					$bottom.css("background-image", styles[i]);
+				}
+			},
+			controlPoints: ["blue 0%", "yellow 100%"]
+		});
+	});
+</script>
+</head>
+<body>
+<div class="grad_ex vertical" id="ex1"></div>
+<div class="grad_ex horizontal" id="ex2"></div>
+<div class="grad_ex" id="ex3"></div>
+
+<div id="controlled">
+  <div class="left"></div>
+  <div class="right"></div>
+  <div class="bottom"></div>
+</div>
+</body>
+</html>
