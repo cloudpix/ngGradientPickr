@@ -1,0 +1,14 @@
+{
+  "name": "ngGradientPickr",
+  "version": "1.0.0",
+  "description": "Gradient Picker for AngularJS",
+  "main": "index.js",
+  "repository": "git@github.com:cloudpix/ngGradientPickr.git",
+  "author": "CloudPix",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "angular": "^1.7.9",
+    "jquery": "^3.4.1",
+    "ngPickr": "https://github.com/cloudpix/ngPickr"
+  }
+}
