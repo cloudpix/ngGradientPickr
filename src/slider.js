@@ -20,12 +20,12 @@ export function GradientSlider(parentElement, options) {
 	this._element.addClass('gdpickr-root');
 	this._element.addClass(`gdpickr-${options.orientation}`);
 
-	const canvasElement = $(`<canvas class="gdpickr-preview"></canvas>`);
+	const canvasElement = $(`<canvas class="gdpickr-slider"></canvas>`);
 	this._element.append(canvasElement);
-	this.canvas = canvasElement[0];
-	this.canvas.width = this.canvas.clientWidth;
-	this.canvas.height = this.canvas.clientHeight;
-	this._canvasContext = this.canvas.getContext('2d');
+	this._canvas = canvasElement[0];
+	this._canvas.width = this._element[0].clientWidth;
+	this._canvas.height = this._element[0].clientHeight;
+	this._canvasContext = this._canvas.getContext('2d');
 
 	const handlesContainerElement = $(`<div class="gdpickr-handles"></div>`);
 	this._element.append(handlesContainerElement);

@@ -1,3 +1,4 @@
+import * as $ from 'jquery';
 import 'angular';
 import {register} from './src/component';
 
@@ -13,38 +14,41 @@ import {register} from './src/component';
 			ngModel: '<',
 			ngDisabled: '<',
 		},
-		template: `<div style="height: 32px; width: 200px; margin: 20px; overflow: visible"></div>`,
+		template: `<div></div>`,
 		controller: NgGradientPickerController,
 		controllerAs: 'vm'
 	});
 
-	NgGradientPickerController.$inject = ['$timeout', '$element', '$log'];
+	NgGradientPickerController.$inject = ['$element', '$log'];
 
-	function NgGradientPickerController($timeout, $element, $log) {
+	function NgGradientPickerController($element, $log) {
 
 		const vm = this;
 		const el = $($element[0].firstElementChild)[0];
 
+		let gradientPickr = null;
+
 		vm.$onInit = angular.noop;
 
-		vm.$postLink = () => {
+		vm.$postLink = () => gradientPickr = $(el).gradientPickr({
+			type: 'linear',
+			orientation: 'horizontal',
+			direction: '45deg',
+			generateStyles: true,
+			stops: [{
+				color: 'rgba(255,255,255,1)',
+				position: '0%'
+			}, {
+				color: 'rgba(0,0,0,1)',
+				position: '100%'
+			}],
+			change: (stops, styles) => $log.debug('Colors:', stops, styles),
+		});
 
-			$(el).gradientPickr({
-				change: (stops, styles) => {
-					console.log('gradient changed:', stops, styles);
-				},
-				direction: '45deg',
-				stops: [{
-					color: '#FFFFFF',
-					position: '0%'
-				}, {
-					color: '#000000',
-					position: '100%'
-				}],
-			});
+		vm.$onDestroy = () => {
+			gradientPickr && gradientPickr.remove();
+			gradientPickr = null;
 		};
-
-		vm.$onDestroy = angular.noop;
 
 	}
 })();

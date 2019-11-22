@@ -15,18 +15,18 @@ export function register() {
 			}
 
 			options = $.extend({
-				stops: [{
-					color: '#FFFFFF',
-					position: '0%'
-				}, {
-					color: '#000000',
-					position: '100%'
-				}],
-				orientation: 'horizontal',
 				type: 'linear',
+				orientation: 'horizontal',
 				direction: 'left',
 				generateStyles: true,
-				change() {
+				stops: [{
+					color: 'rgba(255,255,255,1)',
+					position: '0%'
+				}, {
+					color: 'rgba(0,0,0,1)',
+					position: '100%'
+				}],
+				change(stops, styles) {
 				}
 			}, options);
 
@@ -35,6 +35,8 @@ export function register() {
 				const slider = new GradientSlider(element, options);
 				element.data('gdpickr-sel', slider);
 			});
+
+			return this;
 		},
 
 		update(options) {
@@ -58,12 +60,12 @@ export function register() {
 
 		if (typeof method === 'string' && method !== 'init') {
 
-			methods[method].call(this, options);
+			return methods[method].call(this, options);
 
 		} else {
 
 			options = method;
-			methods.init.call(this, options);
+			return methods.init.call(this, options);
 		}
 	};
 
