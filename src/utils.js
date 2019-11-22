@@ -1,5 +1,6 @@
 /*jslint browser: true */
 /*global window */
+/*global document */
 
 'use strict';
 
@@ -16,4 +17,13 @@ export function browserPrefix() {
 	return agent.indexOf('WebKit') >= 0 ? '-webkit-' :
 		agent.indexOf('Mozilla') >= 0 ? '-moz-' :
 			agent.indexOf('Microsoft') >= 0 ? '-ms-' : '';
+}
+
+export function getOffset(el) {
+	if (!el) return;
+	const box = el.getBoundingClientRect();
+	return {
+		top: box.top + window.pageYOffset - document.documentElement.clientTop,
+		left: box.left + window.pageXOffset - document.documentElement.clientLeft
+	};
 }

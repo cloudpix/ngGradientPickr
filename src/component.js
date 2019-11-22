@@ -51,7 +51,7 @@ export function register() {
 			this.each(function () {
 				const element = $(this);
 				const slider = element.data('gdpickr-sel');
-				slider && slider.delete();
+				slider && slider.destroy();
 			});
 		}
 	};

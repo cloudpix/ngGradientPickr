@@ -34,6 +34,7 @@ export function ColorPicker(slider) {
 		appClass: 'gdpickr',
 		useAsButton: true,
 		inline: true,
+		defaultRepresentation: 'RGBA',
 		components: {
 			opacity: true,
 			hue: true,
@@ -97,8 +98,12 @@ ColorPicker.prototype = {
 	},
 
 	onRemoveClick() {
-		this._handler.remove();
+		this._slider.removeHandle(this._handler, true);
 		this.hide();
+	},
+
+	destroy() {
+		this._pickr.destroy();
 	}
 
 };

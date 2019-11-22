@@ -3,8 +3,7 @@
 
 'use strict';
 
-import * as $ from 'jquery';
-import {bind, browserPrefix, positionComparator} from './utils';
+import {bind, browserPrefix, getOffset, positionComparator} from './utils';
 import {SliderHandler} from './sliderHandler';
 import {ColorPicker} from './colorPicker';
 
@@ -14,36 +13,33 @@ export function GradientSlider(parentElement, options) {
 
 	this._options = options;
 
-	this._element = $(`<div class="gdpickr-root gdpickr-${options.orientation}"></div>`);
+	this._element = document.createElement('div');
+	this._element.classList.add('gdpickr-root');
+	this._element.classList.add(`gdpickr-${options.orientation}`);
 	parentElement.append(this._element);
 
-	this._element.addClass('gdpickr-root');
-	this._element.addClass(`gdpickr-${options.orientation}`);
+	this._canvas = document.createElement('canvas');
+	this._canvas.classList.add('gdpickr-slider');
+	this._canvas.width = this._element.clientWidth;
+	this._canvas.height = this._element.clientHeight;
+	this._element.append(this._canvas);
 
-	const canvasElement = $(`<canvas class="gdpickr-slider"></canvas>`);
-	this._element.append(canvasElement);
-	this._canvas = canvasElement[0];
-	this._canvas.width = this._element[0].clientWidth;
-	this._canvas.height = this._element[0].clientHeight;
 	this._canvasContext = this._canvas.getContext('2d');
 
-	const handlesContainerElement = $(`<div class="gdpickr-handles"></div>`);
-	this._element.append(handlesContainerElement);
-	this._handlesContainerElement = handlesContainerElement;
+	this._handlesContainerElement = document.createElement('div');
+	this._handlesContainerElement.classList.add('gdpickr-handles');
+	this._element.append(this._handlesContainerElement);
 
-	this.draw = bind(this.draw, this);
-
-	this.rebuildHandles();
+	this._rebuild();
 
 	this.onDocumentClick = bind(this.onDocumentClick, this);
-	this.destroyed = bind(this.destroyed, this);
-	$(document).bind('click', this.onDocumentClick);
-	this._element.bind('destroyed', this.destroyed);
-	this.previewClicked = bind(this.previewClicked, this);
+	document.addEventListener('click', this.onDocumentClick);
 
-	canvasElement.click(bind(this.previewClicked, this));
-	handlesContainerElement.click(bind(this.previewClicked, this));
+	this.onClick = bind(this.onClick, this);
+	this._canvas.addEventListener('click', this.onClick);
+	this._handlesContainerElement.addEventListener('click', this.onClick);
 
+	this.draw = bind(this.draw, this);
 	this.draw();
 }
 
@@ -57,35 +53,48 @@ GradientSlider.prototype = {
 		return this._handlesContainerElement;
 	},
 
+	getWidth() {
+		return this.getHandlesContainerElement().getBoundingClientRect().width;
+	},
+
+	getHeight() {
+		return this.getHandlesContainerElement().getBoundingClientRect().height;
+	},
+
 	getOptions() {
 		return this._options;
 	},
 
 	getColorPicker() {
-		return this.colorPicker;
+		return this._colorPicker;
 	},
 
 	onDocumentClick() {
-		this.colorPicker && this.colorPicker.hide();
+		this._colorPicker && this._colorPicker.hide();
 	},
 
 	createHandler(color, position) {
 		return new SliderHandler(this, color, position);
 	},
 
-	destroyed() {
-		$(document).unbind('click', this.onDocumentClick);
-	},
+	destroy() {
 
-	delete() {
-		this._element.remove();
+		this._colorPicker && this._colorPicker.destroy();
+		this._removeHandles();
+
+		this._canvas && this._canvas.removeEventListener('click', this.onClick);
+		this._handlesContainerElement && this._handlesContainerElement.removeEventListener('click', this.onClick);
+
+		document.removeEventListener('click', this.onDocumentClick);
+
+		this._element.parentElement.removeChild(this._element);
 	},
 
 	updateOptions(options) {
 
-		$.extend(this._options, options);
+		Object.assign(this._options, options);
 
-		this.rebuildHandles();
+		this._rebuild();
 		this.draw();
 	},
 
@@ -108,34 +117,39 @@ GradientSlider.prototype = {
 		this._canvasContext.fillStyle = gradient;
 		this._canvasContext.fillRect(0, 0, this._canvasContext.canvas.width, this._canvasContext.canvas.height);
 
-		const styles = this._options.generateStyles ? this._generateStyles() : null;
-		(typeof this._options.change === 'function') && this._options.change(stops, styles);
+		(typeof this._options.change === 'function') && this._options.change(stops, this._options.generateStyles ? this._generateStyles() : null);
 	},
 
-	rebuildHandles() {
-
+	_removeHandles() {
 		this.handles && this.handles.forEach(this.removeHandle);
-
 		this.handles = [];
+	},
 
-		this.colorPicker = new ColorPicker(this);
+	_rebuild() {
+
+		this._removeHandles();
+
+		this._colorPicker && this._colorPicker.destroy();
+		this._colorPicker = new ColorPicker(this);
 
 		this._options.stops.forEach(stop => this.handles.push(this.createHandler(stop.color, stop.position)));
 	},
 
-	removeHandle(handler) {
+	removeHandle(handler, reDraw) {
 
 		const idx = this.handles.indexOf(handler);
 
 		if (idx === -1) return;
 
 		this.handles.splice(idx, 1);
-		handler._element.remove();
+		handler.remove();
+
+		reDraw && this.draw();
 	},
 
-	previewClicked(e) {
+	onClick(e) {
 
-		const offset = $(e.target).offset();
+		const offset = getOffset(e.target);
 		const x = e.pageX - offset.left;
 		const y = e.pageY - offset.top;
 
@@ -151,6 +165,7 @@ GradientSlider.prototype = {
 		this.handles.sort(positionComparator);
 
 		handler.showColorPicker();
+
 		e.stopPropagation();
 	},
 
