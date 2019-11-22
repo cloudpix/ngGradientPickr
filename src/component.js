@@ -1,66 +1,64 @@
 'use strict';
 
 import * as $ from 'jquery';
-import {GradientSlider} from "./slider";
+import {GradientSlider} from './slider';
+import './assets/style.css';
 
 export function register() {
 
 	const methods = {
 
-		init(opts) {
+		init(options) {
 
-			if (opts && opts.orientation === 'vertical' && !opts.fillDirection) {
-				opts.fillDirection = 'top';
+			if (options && options.orientation === 'vertical' && !options.direction) {
+				options.direction = 'top';
 			}
 
-			opts = $.extend({
-				controlPoints: ['#FFF 0%', '#000 100%'],
+			options = $.extend({
+				colors: ['#FFF 0%', '#000 100%'],
 				orientation: 'horizontal',
 				type: 'linear',
-				fillDirection: "left",
+				direction: 'left',
 				generateStyles: true,
 				change() {
 				}
-			}, opts);
+			}, options);
 
 			this.each(function () {
-				const $this = $(this);
-				const gradSel = new GradientSlider($this, opts);
-				$this.data("gradientPicker-sel", gradSel);
+				const element = $(this);
+				const slider = new GradientSlider(element, options);
+				element.data('gdpickr-sel', slider);
 			});
 		},
 
-		update(opts) {
+		update(options) {
 			this.each(function () {
-				const $this = $(this);
-				const gradSel = $this.data("gradientPicker-sel");
-				if (gradSel != null) {
-					gradSel.updateOptions(opts);
-				}
+				const element = $(this);
+				const slider = element.data('gdpickr-sel');
+				slider && slider.updateOptions(options);
 			});
 		},
 
 		delete() {
 			this.each(function () {
-				const $this = $(this);
-				const gradSel = $this.data("gradientPicker-sel");
-				if (gradSel != null) {
-					gradSel.delete();
-				}
+				const element = $(this);
+				const slider = element.data('gdpickr-sel');
+				slider && slider.delete();
 			});
 		}
 	};
 
-	$.fn.gradientPicker = function (method, opts) {
+	$.fn.gradientPickr = function (method, options) {
 
 		if (typeof method === 'string' && method !== 'init') {
 
-			methods[method].call(this, opts);
+			methods[method].call(this, options);
 
 		} else {
 
-			opts = method;
-			methods.init.call(this, opts);
+			options = method;
+			methods.init.call(this, options);
 		}
 	};
+
 }

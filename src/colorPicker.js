@@ -1,48 +1,48 @@
 'use strict';
 
-import * as $ from 'jquery';
-import {bind} from './utils';
+import '@simonwep/pickr/dist/themes/nano.min.css';
 
-// ControlPtConfig
+import {bind} from './utils';
+import Pickr from '@simonwep/pickr';
 
 ColorPicker.prototype = {
 
-	show(position, color, listener) {
+	show(position, color, sliderHandler) {
 
 		this.visible = true;
-		this.listener = listener;
-		this._element.css('visibility', 'visible');
+		this._handler = sliderHandler;
 
-		this._pickr.ColorPickerSetColor(color);
-		this._pickr.css("background-color", color);
+		this._element.style.visibility = 'visible';
 
 		if (this._options.orientation === 'horizontal') {
-			this._element.css('left', position.left);
+			this._element.style.left = `${position.left}px`;
 		} else {
-			this._element.css('top', position.top);
+			this._element.style.top = `${position.top}px`;
 		}
+
+		this._pickr.setColor(color, true);
+		this._pickr.show();
 	},
 
-	hide() {
+	hide(force) {
 
-		if (!this.visible) return;
+		if (!this.visible && !force) return;
 
-		this._element.css('visibility', 'hidden');
 		this.visible = false;
+		this._element.style.visibility = 'hidden';
+		this._pickr.hide();
 	},
 
-	getListener() {
-		return this.listener;
+	getHandler() {
+		return this._handler;
 	},
 
-	colorChanged(hsb, hex, rgb) {
-		hex = "#" + hex;
-		this.listener.colorChanged(hex);
-		this._pickr.css("background-color", hex)
+	onColorChange(color) {
+		this._handler.colorChanged(color);
 	},
 
-	removeClicked() {
-		this.listener.removeClicked();
+	onRemoveClick() {
+		this._handler.removeClicked();
 		this.hide();
 	}
 
@@ -50,33 +50,47 @@ ColorPicker.prototype = {
 
 export function ColorPicker(parentElement, options) {
 
-	this._element = $('<div class="gradientPicker-ptConfig" style="visibility: hidden"></div>');
+	this._element = document.createElement('div');
+	this._element.classList.add('gdpickr-color-pickr');
+	this._element.style.visibility = 'hidden';
+
 	parentElement.append(this._element);
 
-	const pickr = $('<div class="color-chooser"></div>');
-	this._element.append(pickr);
+	const pickrElement = document.createElement('div');
+	this._element.append(pickrElement);
 
-	const removeButton = $("<div class='gradientPicker-close'></div>");
-	this._element.append(removeButton);
+	this.onColorChange = bind(this.onColorChange, this);
+	this.onCloseClick = bind(this.hide, this);
+	this.onRemoveClick = bind(this.onRemoveClick, this);
 
-	this.colorChanged = bind(this.colorChanged, this);
-	this.removeClicked = bind(this.removeClicked, this);
-
-	pickr.ColorPicker({
-		onChange: this.colorChanged,
-		onShow(cp) {
-			$(cp).show();
-			return false;
-		},
-		onHide(cp) {
-			$(cp).hide();
-			return false;
-		}
-	});
-
-	this._pickr = pickr;
 	this._options = options;
 	this.visible = false;
 
-	removeButton.click(this.removeClicked);
+	this._pickrElement = pickrElement;
+	this._pickr = Pickr.create({
+		el: this._pickrElement,
+		theme: 'nano',
+		appClass: 'gdpickr',
+		useAsButton: true,
+		inline: true,
+		components: {
+			opacity: true,
+			hue: true,
+			preview: true,
+			interaction: {
+				hex: true,
+				rgba: true,
+				hsva: false,
+				input: true,
+				clear: true,
+				save: true
+			}
+		},
+		strings: {
+			save: 'Close',
+			clear: 'Remove'
+		}
+	}).on('change', color => this.onColorChange(color.toHEXA().toString()))
+		.on('save', () => this.onCloseClick(true))
+		.on('clear', () => this.onRemoveClick());
 }

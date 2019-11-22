@@ -4,87 +4,80 @@ import * as $ from 'jquery';
 import {bind, browserPrefix, positionComparator} from './utils';
 import {SliderHandler} from './sliderHandler';
 import {ColorPicker} from './colorPicker';
-
-// GradientSelection
+import * as tinycolor from 'tinycolor2';
 
 const prefix = browserPrefix();
 
 GradientSlider.prototype = {
 
-	docClicked() {
-		this.ctrlPtConfig.hide();
+	onDocumentClick() {
+		this.colorPicker && this.colorPicker.hide();
 	},
 
-	createCtrlPt(ctrlPtSetup) {
-		return new SliderHandler(this._handlesContainerElement, ctrlPtSetup, this._options.orientation, this, this.ctrlPtConfig);
+	createHandler(options) {
+		return new SliderHandler(this._handlesContainerElement, options, this._options.orientation,
+			this, this.colorPicker);
 	},
 
 	destroyed() {
-		$(document).unbind("click", this.docClicked);
+		$(document).unbind('click', this.onDocumentClick);
 	},
 
 	delete() {
 		this._element.remove();
 	},
 
-	updateOptions(opts) {
-		$.extend(this._options, opts);
-		this.regenerateControlPoints();
+	updateOptions(options) {
+
+		$.extend(this._options, options);
+
+		this.rebuildHandles();
 		this.updatePreview();
 	},
 
 	updatePreview() {
 
-		const result = [];
+		this.handles.sort(positionComparator);
 
-		this.controlPoints.sort(positionComparator);
-
-		const grad = this._options.orientation === 'horizontal' ?
+		const gradient = this._options.orientation === 'horizontal' ?
 			this._canvasContext.createLinearGradient(0, 0, this._canvasContext.canvas.width, 0) :
 			this._canvasContext.createLinearGradient(0, 0, 0, this._canvasContext.canvas.height);
 
-		for (let i = 0; i < this.controlPoints.length; ++i) {
-			const pt = this.controlPoints[i];
-			grad.addColorStop(pt.position, pt.color);
-			result.push({
-				position: pt.position,
-				color: pt.color
-			});
-		}
+		const result = this.handles.map(handle => {
 
-		this._canvasContext.fillStyle = grad;
+			gradient.addColorStop(handle.position, handle.color);
+
+			return {
+				position: handle.position,
+				color: handle.color
+			};
+		});
+
+		this._canvasContext.fillStyle = gradient;
 		this._canvasContext.fillRect(0, 0, this._canvasContext.canvas.width, this._canvasContext.canvas.height);
 
 		const styles = this._options.generateStyles ? this._generatePreviewStyles() : null;
-		(typeof this._options.change == 'function') && this._options.change(result, styles);
+		(typeof this._options.change === 'function') && this._options.change(result, styles);
 	},
 
-	regenerateControlPoints() {
+	rebuildHandles() {
 
-		if (this.controlPoints) {
+		this.handles && this.handles.forEach(this.removeHandle);
 
-			for (let i = 0; i < this.controlPoints.length; ++i) {
-				this.removeControlPoint(this.controlPoints[i]);
-			}
-		}
+		this.handles = [];
 
-		this.controlPoints = [];
-		this.ctrlPtConfig = new ColorPicker(this._element, this._options);
+		this.colorPicker = new ColorPicker(this._element, this._options);
 
-		for (let i = 0; i < this._options.controlPoints.length; ++i) {
-
-			const ctrlPt = this.createCtrlPt(this._options.controlPoints[i]);
-			this.controlPoints.push(ctrlPt);
-		}
+		this._options.colors.forEach(color => this.handles.push(this.createHandler(color)));
 	},
 
-	removeControlPoint(handler) {
+	removeHandle(handler) {
 
-		const idx = this.controlPoints.indexOf(handler);
+		const idx = this.handles.indexOf(handler);
 
 		if (idx === -1) return;
 
-		this.controlPoints.splice(idx, 1);
+		this.handles.splice(idx, 1);
 		handler._element.remove();
 	},
 
@@ -98,39 +91,35 @@ GradientSlider.prototype = {
 			this._canvasContext.getImageData(x, 0, 1, 1) :
 			this._canvasContext.getImageData(0, y, 1, 1);
 
-		const colorStr = `rgb(${imgData.data[0]},${imgData.data[1]},${imgData.data[2]})`;
+		const color = `rgb(${imgData.data[0]},${imgData.data[1]},${imgData.data[2]})`;
 
-		const cp = this.createCtrlPt({
-			position: this._options.orientation === 'horizontal'
-				? (x / this._canvasContext.canvas.width)
-				: (y / this._canvasContext.canvas.height),
-			color: colorStr
+		const handler = this.createHandler({
+			position: this._options.orientation === 'horizontal' ?
+				(x / this._canvasContext.canvas.width) : (y / this._canvasContext.canvas.height),
+			color: color
 		});
 
-		this.controlPoints.push(cp);
-		this.controlPoints.sort(positionComparator);
+		this.handles.push(handler);
+		this.handles.sort(positionComparator);
 
-		cp.showConfigView();
+		handler.showColorPicker();
 		e.stopPropagation();
 	},
 
 	_generatePreviewStyles() {
 
 		//linear-gradient(top, rgb(217,230,163) 86%, rgb(227,249,159) 9%)
-		let str = `${this._options.type}-gradient(${(this._options.type === 'linear') ? (this._options.fillDirection + ', ') : ''}`;
+		let str = `${this._options.type}-gradient(${(this._options.type === 'linear') ? (this._options.direction + ', ') : ''}`;
 		let first = true;
 
-		for (let i = 0; i < this.controlPoints.length; ++i) {
-
-			const pt = this.controlPoints[i];
-
+		this.handles.forEach(handle => {
 			if (!first) {
 				str += ', ';
 			} else {
 				first = false;
 			}
-			str += `${tinycolor(pt.color).toHexString()} ${(pt.position * 100) | 0}%`;
-		}
+			str += `${tinycolor(handle.color).toHexString()} ${(handle.position * 100) || 0}%`;
+		});
 
 		str = str + ')';
 		const styles = [str, prefix + str];
@@ -142,31 +131,31 @@ export function GradientSlider(parentElement, options) {
 
 	this._options = options;
 
-	this._element = $(`<div class="gradientPicker-root gradientPicker-${options.orientation}"></div>`);
+	this._element = $(`<div class="gdpickr-root gdpickr-${options.orientation}"></div>`);
 	parentElement.append(this._element);
 
-	this._element.addClass('gradientPicker-root');
-	this._element.addClass(`gradientPicker-${options.orientation}`);
+	this._element.addClass('gdpickr-root');
+	this._element.addClass(`gdpickr-${options.orientation}`);
 
-	const canvasElement = $("<canvas class='gradientPicker-preview'></canvas>");
+	const canvasElement = $(`<canvas class="gdpickr-preview"></canvas>`);
 	this._element.append(canvasElement);
 	this.canvas = canvasElement[0];
 	this.canvas.width = this.canvas.clientWidth;
 	this.canvas.height = this.canvas.clientHeight;
-	this._canvasContext = this.canvas.getContext("2d");
+	this._canvasContext = this.canvas.getContext('2d');
 
-	const handlesContainerElement = $("<div class='gradientPicker-ctrlPts'></div>");
+	const handlesContainerElement = $(`<div class="gdpickr-handles"></div>`);
 	this._element.append(handlesContainerElement);
 	this._handlesContainerElement = handlesContainerElement;
 
 	this.updatePreview = bind(this.updatePreview, this);
 
-	this.regenerateControlPoints();
+	this.rebuildHandles();
 
-	this.docClicked = bind(this.docClicked, this);
+	this.onDocumentClick = bind(this.onDocumentClick, this);
 	this.destroyed = bind(this.destroyed, this);
-	$(document).bind("click", this.docClicked);
-	this._element.bind("destroyed", this.destroyed);
+	$(document).bind('click', this.onDocumentClick);
+	this._element.bind('destroyed', this.destroyed);
 	this.previewClicked = bind(this.previewClicked, this);
 
 	canvasElement.click(bind(this.previewClicked, this));

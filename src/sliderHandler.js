@@ -4,7 +4,7 @@ import * as tinycolor from 'tinycolor2';
 import * as $ from 'jquery';
 import {bind} from './utils';
 
-// ControlPoint
+import 'jquery-ui-dist/jquery-ui';
 
 SliderHandler.prototype = {
 
@@ -17,52 +17,53 @@ SliderHandler.prototype = {
 			const top = ui.position.top;
 			this.position = (top / (this._parentElement.height() - this.outerHeight));
 		}
-		this.listener.updatePreview();
+		this._slider.updatePreview();
 	},
 
 	stop(e, ui) {
-		this.listener.updatePreview();
-		this.configView.show(this._element.position(), this.color, this);
+		this._slider.updatePreview();
+		this._colorPicker.show(this._element.position(), this.color, this);
 	},
 
 	clicked(e) {
-		if (this === this.configView.getListener() && this.configView.visible) {
-			// second click
-			this.hideConfigView();
+
+		if (this._colorPicker.visible && (this === this._colorPicker.getHandler())) {
+			this.hideColorPicker();
 		} else {
-			this.showConfigView();
+			this.showColorPicker();
 		}
+
 		e.stopPropagation();
 		e.preventDefault();
 	},
 
-	showConfigView() {
-		this.configView.show(this._element.position(), this.color, this);
+	showColorPicker() {
+		this._colorPicker.show(this._element.position(), this.color, this);
 	},
 
-	hideConfigView() {
-		this.configView.hide();
+	hideColorPicker() {
+		this._colorPicker.hide();
 	},
 
 	colorChanged(c) {
 		this.color = c;
 		this._element.css('background-color', this.color);
-		this.listener.updatePreview();
+		this._slider.updatePreview();
 	},
 
 	removeClicked() {
-		this.listener.removeControlPoint(this);
-		this.listener.updatePreview();
+		this._slider.removeHandle(this);
+		this._slider.updatePreview();
 	}
 };
 
-export function SliderHandler(parentElement, initialState, orientation, listener, ctrlPtConfig) {
+export function SliderHandler(parentElement, initialState, orientation, slider, colorPicker) {
 
-	this._element = $("<div class='gradientPicker-ctrlPt'></div>");
+	this._element = $(`<div class='gdpickr-handler'></div>`);
 	parentElement.append(this._element);
 	this._parentElement = parentElement;
 
-	this.configView = ctrlPtConfig;
+	this._colorPicker = colorPicker;
 	this.orientation = orientation;
 
 	if (typeof initialState === 'string') {
@@ -78,7 +79,7 @@ export function SliderHandler(parentElement, initialState, orientation, listener
 		this.color = tinycolor(initialState.color).toHexString();
 	}
 
-	this.listener = listener;
+	this._slider = slider;
 	this.outerWidth = this._element.outerWidth();
 	this.outerHeight = this._element.outerHeight();
 

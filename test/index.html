@@ -46,7 +46,7 @@
     top: 200px;
   }
 </style>
-<link rel="stylesheet" href="../src/jquery.gradientPicker.css" type="text/css"/>
+<link rel="stylesheet" href="../src/jquery.gdpickr.css" type="text/css"/>
 <link rel="stylesheet" href="../vendor/colorpicker/css/colorpicker.css" type="text/css"/>
 
 <script src="../node_modules/jquery/dist/jquery.js"></script>
@@ -62,18 +62,18 @@
 
 <script>
 
-  import {register} from "../src/component";
+	import {register} from "../src/component";
 
-  register();
+	register();
 
-  $(function () {
+	$(function () {
 
 		const $body = $("body");
 		const $left = $(".left");
 		const $right = $(".right");
 		const $bottom = $(".bottom");
 
-		$("#ex1").gradientPicker({
+		$("#ex1").gdpickr({
 			change: function (stops, styles) {
 				console.log('gradient changed:', stops, styles);
 				$body.css({background: styles[1]});
@@ -82,29 +82,29 @@
 					$left.css("background-image", styles[i]);
 				}
 			},
-			// fillDirection: "90deg",
+			// direction: "90deg",
 			orientation: 'vertical',
-			controlPoints: ["green 0%", "yellow 50%", "green 100%"]
+			colors: ["green 0%", "yellow 50%", "green 100%"]
 		});
 
-		$("#ex2").gradientPicker({
+		$("#ex2").gdpickr({
 			change: function (stops, styles) {
 				for (i = 0; i < styles.length; ++i) {
 					$right.css("background-image", styles[i]);
 				}
 			},
-			fillDirection: "45deg",
-			controlPoints: ["green 0%", "orange 100%"]
+			direction: "45deg",
+			colors: ["green 0%", "orange 100%"]
 		});
 
-		$("#ex3").gradientPicker({
+		$("#ex3").gdpickr({
 			type: "radial",
 			change: function (stops, styles) {
 				for (i = 0; i < styles.length; ++i) {
 					$bottom.css("background-image", styles[i]);
 				}
 			},
-			controlPoints: ["blue 0%", "yellow 100%"]
+			colors: ["blue 0%", "yellow 100%"]
 		});
 	});
 </script>
