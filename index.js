@@ -34,7 +34,13 @@ import {register} from './src/component';
 					console.log('gradient changed:', stops, styles);
 				},
 				direction: '45deg',
-				colors: ['green 0%', 'orange 100%']
+				stops: [{
+					color: '#FFFFFF',
+					position: '0%'
+				}, {
+					color: '#000000',
+					position: '100%'
+				}],
 			});
 		};
 

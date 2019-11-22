@@ -15,7 +15,13 @@ export function register() {
 			}
 
 			options = $.extend({
-				colors: ['#FFF 0%', '#000 100%'],
+				stops: [{
+					color: '#FFFFFF',
+					position: '0%'
+				}, {
+					color: '#000000',
+					position: '100%'
+				}],
 				orientation: 'horizontal',
 				type: 'linear',
 				direction: 'left',

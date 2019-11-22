@@ -1,7 +1,10 @@
+/*jslint browser: true */
+/*global window */
+
 'use strict';
 
 export function bind(fn, ctx) {
-	return !fn ? null : typeof fn.bind === "function" ? fn.bind(ctx) : () => fn.apply(ctx, arguments);
+	return !fn ? null : typeof fn.bind === 'function' ? fn.bind(ctx) : () => fn.apply(ctx, arguments);
 }
 
 export function positionComparator(l, r) {

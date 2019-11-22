@@ -1,3 +1,6 @@
+/*jslint browser: true */
+/*global document */
+
 'use strict';
 
 import '@simonwep/pickr/dist/themes/nano.min.css';
@@ -5,56 +8,15 @@ import '@simonwep/pickr/dist/themes/nano.min.css';
 import {bind} from './utils';
 import Pickr from '@simonwep/pickr';
 
-ColorPicker.prototype = {
+export function ColorPicker(slider) {
 
-	show(position, color, sliderHandler) {
-
-		this.visible = true;
-		this._handler = sliderHandler;
-
-		this._element.style.visibility = 'visible';
-
-		if (this._options.orientation === 'horizontal') {
-			this._element.style.left = `${position.left}px`;
-		} else {
-			this._element.style.top = `${position.top}px`;
-		}
-
-		this._pickr.setColor(color, true);
-		this._pickr.show();
-	},
-
-	hide(force) {
-
-		if (!this.visible && !force) return;
-
-		this.visible = false;
-		this._element.style.visibility = 'hidden';
-		this._pickr.hide();
-	},
-
-	getHandler() {
-		return this._handler;
-	},
-
-	onColorChange(color) {
-		this._handler.colorChanged(color);
-	},
-
-	onRemoveClick() {
-		this._handler.removeClicked();
-		this.hide();
-	}
-
-};
-
-export function ColorPicker(parentElement, options) {
+	this._slider = slider;
 
 	this._element = document.createElement('div');
 	this._element.classList.add('gdpickr-color-pickr');
 	this._element.style.visibility = 'hidden';
 
-	parentElement.append(this._element);
+	this._slider.getElement().append(this._element);
 
 	const pickrElement = document.createElement('div');
 	this._element.append(pickrElement);
@@ -63,8 +25,7 @@ export function ColorPicker(parentElement, options) {
 	this.onCloseClick = bind(this.hide, this);
 	this.onRemoveClick = bind(this.onRemoveClick, this);
 
-	this._options = options;
-	this.visible = false;
+	this._visible = false;
 
 	this._pickrElement = pickrElement;
 	this._pickr = Pickr.create({
@@ -94,3 +55,50 @@ export function ColorPicker(parentElement, options) {
 		.on('save', () => this.onCloseClick(true))
 		.on('clear', () => this.onRemoveClick());
 }
+
+ColorPicker.prototype = {
+
+	isVisible() {
+		return this._visible;
+	},
+
+	show(position, color, sliderHandler) {
+
+		this._visible = true;
+		this._handler = sliderHandler;
+
+		this._element.style.visibility = 'visible';
+
+		if (this._slider.isHorizontal()) {
+			this._element.style.left = `${position.left}px`;
+		} else {
+			this._element.style.top = `${position.top}px`;
+		}
+
+		this._pickr.setColor(color, true);
+		this._pickr.show();
+	},
+
+	hide(force) {
+
+		if (!this._visible && !force) return;
+
+		this._visible = false;
+		this._element.style.visibility = 'hidden';
+		this._pickr.hide();
+	},
+
+	getHandler() {
+		return this._handler;
+	},
+
+	onColorChange(color) {
+		this._handler.onColorChange(color);
+	},
+
+	onRemoveClick() {
+		this._handler.remove();
+		this.hide();
+	}
+
+};

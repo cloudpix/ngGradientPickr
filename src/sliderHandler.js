@@ -1,33 +1,78 @@
 'use strict';
 
-import * as tinycolor from 'tinycolor2';
 import * as $ from 'jquery';
 import {bind} from './utils';
 
 import 'jquery-ui-dist/jquery-ui';
 
+export function SliderHandler(slider, color, position) {
+
+	this._slider = slider;
+	this.position = typeof position === 'string' ? position.replace(/%/g, '') / 100 : position;
+	this.color = color;
+
+	this._element = $(`<div class='gdpickr-handler'></div>`);
+
+	this._slider.getHandlesContainerElement().append(this._element);
+
+	this._outerWidth = this._element.outerWidth();
+	this._outerHeight = this._element.outerHeight();
+
+	this._element.css('background-color', this.color);
+
+	if (this._slider.isHorizontal()) {
+
+		const left = (this._slider.getHandlesContainerElement().width() - this._element.outerWidth()) * (this.position);
+		this._element.css('left', left);
+
+	} else {
+
+		const top = (this._slider.getHandlesContainerElement().height() - this._element.outerHeight()) * (this.position);
+		this._element.css('top', top);
+	}
+
+	this.drag = bind(this.drag, this);
+	this.stop = bind(this.stop, this);
+	this.onClick = bind(this.onClick, this);
+	this.onColorChange = bind(this.onColorChange, this);
+
+	this._element.draggable({
+		axis: this._slider.isHorizontal() ? 'x' : 'y',
+		drag: this.drag,
+		stop: this.stop,
+		containment: this._slider.getHandlesContainerElement()
+	});
+	this._element.css('position', 'absolute');
+	this._element.click(this.onClick);
+}
+
 SliderHandler.prototype = {
 
 	drag(e, ui) {
-		// convert position to a %
-		if (this.orientation === 'horizontal') {
+
+		if (this._slider.isHorizontal()) {
+
 			const left = ui.position.left;
-			this.position = (left / (this._parentElement.width() - this.outerWidth));
+			this.position = (left / (this._slider.getHandlesContainerElement().width() - this._outerWidth));
+
 		} else {
+
 			const top = ui.position.top;
-			this.position = (top / (this._parentElement.height() - this.outerHeight));
+			this.position = (top / (this._slider.getHandlesContainerElement().height() - this._outerHeight));
 		}
-		this._slider.updatePreview();
+
+		this._slider.draw();
 	},
 
 	stop(e, ui) {
-		this._slider.updatePreview();
-		this._colorPicker.show(this._element.position(), this.color, this);
+		this._slider.draw();
+		this._slider.getColorPicker().show(this._element.position(), this.color, this);
 	},
 
-	clicked(e) {
+	onClick(e) {
 
-		if (this._colorPicker.visible && (this === this._colorPicker.getHandler())) {
+		if (this._slider.getColorPicker().isVisible() &&
+			(this === this._slider.getColorPicker().getHandler())) {
 			this.hideColorPicker();
 		} else {
 			this.showColorPicker();
@@ -38,77 +83,22 @@ SliderHandler.prototype = {
 	},
 
 	showColorPicker() {
-		this._colorPicker.show(this._element.position(), this.color, this);
+		this._slider.getColorPicker().show(this._element.position(), this.color, this);
 	},
 
 	hideColorPicker() {
-		this._colorPicker.hide();
+		this._slider.getColorPicker().hide();
 	},
 
-	colorChanged(c) {
+	onColorChange(c) {
 		this.color = c;
 		this._element.css('background-color', this.color);
-		this._slider.updatePreview();
+		this._slider.draw();
 	},
 
-	removeClicked() {
+	remove() {
 		this._slider.removeHandle(this);
-		this._slider.updatePreview();
+		this._slider.draw();
 	}
+
 };
-
-export function SliderHandler(parentElement, initialState, orientation, slider, colorPicker) {
-
-	this._element = $(`<div class='gdpickr-handler'></div>`);
-	parentElement.append(this._element);
-	this._parentElement = parentElement;
-
-	this._colorPicker = colorPicker;
-	this.orientation = orientation;
-
-	if (typeof initialState === 'string') {
-
-		initialState = initialState.split(' ');
-		this.position = parseFloat(initialState[1]) / 100;
-		this.color = tinycolor(initialState[0]).toHexString();
-
-	} else {
-
-		this.position = initialState.position;
-		// rgb object -> hex (we can't assign rgb object as background color)
-		this.color = tinycolor(initialState.color).toHexString();
-	}
-
-	this._slider = slider;
-	this.outerWidth = this._element.outerWidth();
-	this.outerHeight = this._element.outerHeight();
-
-	this._element.css('background-color', this.color);
-	// then convert back to get rgb from green
-	this.color = tinycolor(this._element.css('backgroundColor')).toHexString();
-
-	if (orientation === 'horizontal') {
-
-		const left = (parentElement.width() - this._element.outerWidth()) * (this.position);
-		this._element.css('left', left);
-
-	} else {
-
-		const top = (parentElement.height() - this._element.outerHeight()) * (this.position);
-		this._element.css('top', top);
-	}
-
-	this.drag = bind(this.drag, this);
-	this.stop = bind(this.stop, this);
-	this.clicked = bind(this.clicked, this);
-	this.colorChanged = bind(this.colorChanged, this);
-
-	this._element.draggable({
-		axis: (orientation === 'horizontal') ? 'x' : 'y',
-		drag: this.drag,
-		stop: this.stop,
-		containment: parentElement
-	});
-	this._element.css('position', 'absolute');
-	this._element.click(this.clicked);
-}

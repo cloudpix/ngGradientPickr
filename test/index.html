@@ -84,7 +84,13 @@
 			},
 			// direction: "90deg",
 			orientation: 'vertical',
-			colors: ["green 0%", "yellow 50%", "green 100%"]
+			stops: [{
+				color: '#FFFFFF',
+				position: '0%'
+			}, {
+				color: '#000000',
+				position: '100%'
+			}],
 		});
 
 		$("#ex2").gdpickr({
@@ -94,7 +100,13 @@
 				}
 			},
 			direction: "45deg",
-			colors: ["green 0%", "orange 100%"]
+			stops: [{
+				color: '#FFFFFF',
+				position: '0%'
+			}, {
+				color: '#000000',
+				position: '100%'
+			}],
 		});
 
 		$("#ex3").gdpickr({
@@ -104,7 +116,13 @@
 					$bottom.css("background-image", styles[i]);
 				}
 			},
-			colors: ["blue 0%", "yellow 100%"]
+			stops: [{
+				color: '#FFFFFF',
+				position: '0%'
+			}, {
+				color: '#000000',
+				position: '100%'
+			}],
 		});
 	});
 </script>
