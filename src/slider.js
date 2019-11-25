@@ -6,6 +6,7 @@
 import {bind, browserPrefix, getOffset, positionComparator} from './utils';
 import SliderHandler from './sliderHandler';
 import ColorPicker from './colorPicker';
+import './assets/style.css';
 
 const prefix = browserPrefix();
 
@@ -40,6 +41,8 @@ class GradientSlider {
 		this.onClick = bind(this.onClick, this);
 		this._canvas.addEventListener('click', this.onClick);
 		this._handlesContainerElement.addEventListener('click', this.onClick);
+
+		this.removeHandle = bind(this.removeHandle, this);
 
 		this.draw = bind(this.draw, this);
 		this.draw();
@@ -179,5 +182,7 @@ class GradientSlider {
 	}
 
 }
+
+GradientSlider.create = (element, options) => new GradientSlider(element, options);
 
 export default GradientSlider;

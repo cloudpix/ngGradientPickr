@@ -1,11 +1,9 @@
 import * as $ from 'jquery';
 import 'angular';
-import {register} from './src/component';
+import GradientSlider from 'ngGradientPickr/src/slider';
 
 (function () {
 	'use strict';
-
-	register();
 
 	angular.module('ngGradientPickr', []);
 
@@ -26,11 +24,11 @@ import {register} from './src/component';
 		const vm = this;
 		const el = $($element[0].firstElementChild)[0];
 
-		let gradientPickr = null;
+		let gradientSlider = null;
 
 		vm.$onInit = angular.noop;
 
-		vm.$postLink = () => gradientPickr = $(el).gradientPickr({
+		vm.$postLink = () => gradientSlider = GradientSlider.create(el, {
 			type: 'linear',
 			orientation: 'horizontal',
 			direction: '45deg',
@@ -46,8 +44,8 @@ import {register} from './src/component';
 		});
 
 		vm.$onDestroy = () => {
-			gradientPickr && gradientPickr.remove();
-			gradientPickr = null;
+			gradientSlider && gradientSlider.destroy();
+			gradientSlider = null;
 		};
 
 	}
