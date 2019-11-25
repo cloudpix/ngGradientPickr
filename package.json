@@ -8,8 +8,6 @@
   "license": "Apache 2.0",
   "dependencies": {
     "@simonwep/pickr": "^1.4.7",
-    "angular": "^1.7.9",
-    "jquery": "^3.4.1",
-    "jquery-ui-dist": "^1.12.1"
+    "angular": "^1.7.9"
   }
 }

@@ -3,16 +3,17 @@
 
 'use strict';
 
-import * as $ from 'jquery';
-import {bind} from './utils';
-
-import 'jquery-ui-dist/jquery-ui';
+import {bind, range} from './utils';
 
 class SliderHandler {
+
+	/* https://javascript.info/mouse-drag-and-drop */
 
 	constructor(slider, color, position) {
 
 		this._slider = slider;
+		this._isDragging = false;
+		this._lastPosition = {};
 		this.position = typeof position === 'string' ? position.replace(/%/g, '') / 100 : position;
 		this.color = color;
 
@@ -20,17 +21,12 @@ class SliderHandler {
 		this._element.classList.add('gdpickr-handler');
 		this._slider.getHandlesContainerElement().append(this._element);
 
-		this.drag = bind(this.drag, this);
-		this.stop = bind(this.stop, this);
+		this._updatePosition = bind(this._updatePosition, this);
 		this.onClick = bind(this.onClick, this);
 		this.onColorChange = bind(this.onColorChange, this);
-
-		$(this._element).draggable({
-			axis: this._slider.isHorizontal() ? 'x' : 'y',
-			drag: this.drag,
-			stop: this.stop,
-			containment: this._slider.getHandlesContainerElement()
-		});
+		this.onMouseDown = bind(this.onMouseDown, this);
+		this.onMouseMove = bind(this.onMouseMove, this);
+		this.onMouseUp = bind(this.onMouseUp, this);
 
 		this._element.style.backgroundColor = this.color;
 		this._element.style.position = 'absolute';
@@ -39,32 +35,81 @@ class SliderHandler {
 			(this._element.style.top = `${(this._slider.getHeight() - this._element.offsetHeight) * (this.position)}px`);
 
 		this._element.addEventListener('click', this.onClick);
+		this._element.addEventListener('mousemove', this.onMouseMove);
+		this._element.addEventListener('mousedown', this.onMouseDown);
+		this._element.addEventListener('mouseup', this.onMouseUp);
 	}
 
-	drag(e, ui) {
+	_updatePosition() {
 
-		if (this._slider.isHorizontal()) {
+		this.position = this._slider.isHorizontal() ?
+			this._element.offsetLeft / (this._slider.getWidth() - this._element.offsetWidth) :
+			this._element.offsetTop / (this._slider.getHeight() - this._element.offsetHeight);
 
-			const left = ui.position.left;
-			this.position = (left / (this._slider.getWidth() - this._element.offsetWidth));
+		if (this.position < 0 || this.position > 1) {
 
-		} else {
-
-			const top = ui.position.top;
-			this.position = (top / (this._slider.getHeight() - this._element.offsetHeight));
+			console.warn(`Invalid handler position: ${this.position}. Details: ${JSON.stringify({
+				rect: this._element.getBoundingClientRect(),
+				offset: {
+					left: this._element.offsetLeft,
+					top: this._element.offsetTop,
+					width: this._element.offsetWidth,
+					height: this._element.offsetHeight
+				},
+				slider: {
+					width: this._slider.getWidth(),
+					height: this._slider.getHeight()
+				}
+			}, undefined, 2)}`);
 		}
 
 		this._slider.draw();
 	}
 
-	stop(e, ui) {
+	isDragging() {
+		return this._isDragging;
+	}
+
+	onMouseDown(e) {
+
+		this._isDragging = true;
+		this._lastPosition = {
+			x: e.pageX,
+			y: e.pageY
+		};
+
+		document.addEventListener('mousemove', this.onMouseMove);
+		document.addEventListener('mouseup', this.onMouseUp);
+
+		e.stopPropagation();
+	}
+
+	onMouseMove(e) {
+
+		if (!this._isDragging) return;
+
+		this._slider.isHorizontal() ?
+			this._element.style.left = `${range(this._element.offsetLeft - (this._lastPosition.x - e.pageX), 0, this._slider.getWidth() - this._element.offsetWidth)}px` :
+			this._element.style.top = `${range(this._element.offsetTop - (this._lastPosition.y - e.pageY), 0, this._slider.getHeight() - this._element.offsetHeight)}px`;
+
+		this.onMouseDown(e);
+
+		this._updatePosition();
+
+		e.stopPropagation();
+		e.preventDefault();
+	}
+
+	onMouseUp(e) {
+
+		this._isDragging = false;
 
 		this._slider.draw();
 
-		this._slider.getColorPicker().show({
-			left: this._element.offsetLeft,
-			top: this._element.offsetTop
-		}, this.color, this);
+		document.removeEventListener('mousemove', this.onMouseMove);
+		document.removeEventListener('mouseup', this.onMouseUp);
+
+		e.stopPropagation();
 	}
 
 	onClick(e) {
@@ -101,6 +146,9 @@ class SliderHandler {
 
 	remove() {
 		this._element.removeEventListener('click', this.onClick);
+		this._element.removeEventListener('mousemove', this.onMouseMove);
+		this._element.removeEventListener('mousedown', this.onMouseDown);
+		this._element.removeEventListener('mouseup', this.onMouseUp);
 		this._element.remove();
 	}
 

@@ -27,3 +27,7 @@ export function getOffset(el) {
 		left: box.left + window.pageXOffset - document.documentElement.clientLeft
 	};
 }
+
+export function range(value, min, max) {
+	return Math.max(Math.min(max, value), min);
+}

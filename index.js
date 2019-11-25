@@ -1,4 +1,3 @@
-import * as $ from 'jquery';
 import 'angular';
 import GradientSlider from 'ngGradientPickr/src/slider';
 
@@ -22,7 +21,7 @@ import GradientSlider from 'ngGradientPickr/src/slider';
 	function NgGradientPickerController($element, $log) {
 
 		const vm = this;
-		const el = $($element[0].firstElementChild)[0];
+		const el = $element[0].firstElementChild;
 
 		let gradientSlider = null;
 
@@ -30,7 +29,7 @@ import GradientSlider from 'ngGradientPickr/src/slider';
 
 		vm.$postLink = () => gradientSlider = GradientSlider.create(el, {
 			type: 'linear',
-			orientation: 'horizontal',
+			orientation: 'vertical',
 			direction: '45deg',
 			generateStyles: true,
 			stops: [{

@@ -3,7 +3,7 @@
 
 'use strict';
 
-import {bind, browserPrefix, getOffset, positionComparator} from './utils';
+import {bind, browserPrefix, getOffset, positionComparator, range} from './utils';
 import SliderHandler from './sliderHandler';
 import ColorPicker from './colorPicker';
 import './assets/style.css';
@@ -41,6 +41,10 @@ class GradientSlider {
 		document.addEventListener('click', this.onDocumentClick);
 
 		this.onClick = bind(this.onClick, this);
+		this.onMouseDown = bind(this.onMouseDown, this);
+		this.onMouseUp = bind(this.onMouseUp, this);
+		this.onMouseMove = bind(this.onMouseMove, this);
+
 		this._canvas.addEventListener('click', this.onClick);
 		this._handlesContainerElement.addEventListener('click', this.onClick);
 
@@ -129,7 +133,7 @@ class GradientSlider {
 			this._canvasContext.createLinearGradient(0, 0, 0, this._canvasContext.canvas.height);
 
 		const stops = this.handles.map(handle => {
-			gradient.addColorStop(handle.position, handle.color);
+			gradient.addColorStop(range(handle.position, 0, 1), handle.color);
 			return {
 				position: handle.position,
 				color: handle.color
