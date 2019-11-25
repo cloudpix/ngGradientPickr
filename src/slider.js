@@ -14,7 +14,9 @@ class GradientSlider {
 
 	constructor(parentElement, options) {
 
-		this._options = options;
+		if (!parentElement) throw new Error('parentElement is mandatory.');
+
+		this._buildOptions(options);
 
 		this._element = document.createElement('div');
 		this._element.classList.add('gdpickr-root');
@@ -42,10 +44,27 @@ class GradientSlider {
 		this._canvas.addEventListener('click', this.onClick);
 		this._handlesContainerElement.addEventListener('click', this.onClick);
 
-		this.removeHandle = bind(this.removeHandle, this);
-
 		this.draw = bind(this.draw, this);
 		this.draw();
+	}
+
+	_buildOptions(options) {
+
+		this._options = Object.assign({}, {
+			type: 'linear',
+			orientation: 'horizontal',
+			direction: 'left',
+			generateStyles: true,
+			stops: [{
+				color: 'rgba(255,255,255,1)',
+				position: '0%'
+			}, {
+				color: 'rgba(0,0,0,1)',
+				position: '100%'
+			}],
+			change: (stops, styles) => {
+			},
+		}, options);
 	}
 
 	getElement() {
@@ -124,7 +143,7 @@ class GradientSlider {
 	}
 
 	_removeHandles() {
-		this.handles && this.handles.forEach(this.removeHandle);
+		this.handles && this.handles.forEach(handler => this.removeHandle(handler));
 		this.handles = [];
 	}
 
