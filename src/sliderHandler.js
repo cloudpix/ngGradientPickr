@@ -8,38 +8,38 @@ import {bind} from './utils';
 
 import 'jquery-ui-dist/jquery-ui';
 
-export function SliderHandler(slider, color, position) {
+class SliderHandler {
 
-	this._slider = slider;
-	this.position = typeof position === 'string' ? position.replace(/%/g, '') / 100 : position;
-	this.color = color;
+	constructor(slider, color, position) {
 
-	this._element = document.createElement('div');
-	this._element.classList.add('gdpickr-handler');
-	this._slider.getHandlesContainerElement().append(this._element);
+		this._slider = slider;
+		this.position = typeof position === 'string' ? position.replace(/%/g, '') / 100 : position;
+		this.color = color;
 
-	this.drag = bind(this.drag, this);
-	this.stop = bind(this.stop, this);
-	this.onClick = bind(this.onClick, this);
-	this.onColorChange = bind(this.onColorChange, this);
+		this._element = document.createElement('div');
+		this._element.classList.add('gdpickr-handler');
+		this._slider.getHandlesContainerElement().append(this._element);
 
-	$(this._element).draggable({
-		axis: this._slider.isHorizontal() ? 'x' : 'y',
-		drag: this.drag,
-		stop: this.stop,
-		containment: this._slider.getHandlesContainerElement()
-	});
+		this.drag = bind(this.drag, this);
+		this.stop = bind(this.stop, this);
+		this.onClick = bind(this.onClick, this);
+		this.onColorChange = bind(this.onColorChange, this);
 
-	this._element.style.backgroundColor = this.color;
-	this._element.style.position = 'absolute';
-	this._slider.isHorizontal() ?
-		(this._element.style.left = `${(this._slider.getWidth() - this._element.offsetWidth) * (this.position)}px`) :
-		(this._element.style.top = `${(this._slider.getHeight() - this._element.offsetHeight) * (this.position)}px`);
+		$(this._element).draggable({
+			axis: this._slider.isHorizontal() ? 'x' : 'y',
+			drag: this.drag,
+			stop: this.stop,
+			containment: this._slider.getHandlesContainerElement()
+		});
 
-	this._element.addEventListener('click', this.onClick);
-}
+		this._element.style.backgroundColor = this.color;
+		this._element.style.position = 'absolute';
+		this._slider.isHorizontal() ?
+			(this._element.style.left = `${(this._slider.getWidth() - this._element.offsetWidth) * (this.position)}px`) :
+			(this._element.style.top = `${(this._slider.getHeight() - this._element.offsetHeight) * (this.position)}px`);
 
-SliderHandler.prototype = {
+		this._element.addEventListener('click', this.onClick);
+	}
 
 	drag(e, ui) {
 
@@ -55,7 +55,7 @@ SliderHandler.prototype = {
 		}
 
 		this._slider.draw();
-	},
+	}
 
 	stop(e, ui) {
 
@@ -65,7 +65,7 @@ SliderHandler.prototype = {
 			left: this._element.offsetLeft,
 			top: this._element.offsetTop
 		}, this.color, this);
-	},
+	}
 
 	onClick(e) {
 
@@ -78,18 +78,18 @@ SliderHandler.prototype = {
 
 		e.stopPropagation();
 		e.preventDefault();
-	},
+	}
 
 	showColorPicker() {
 		this._slider.getColorPicker().show({
 			left: this._element.offsetLeft,
 			top: this._element.offsetTop
 		}, this.color, this);
-	},
+	}
 
 	hideColorPicker() {
 		this._slider.getColorPicker().hide();
-	},
+	}
 
 	onColorChange(c) {
 
@@ -97,11 +97,13 @@ SliderHandler.prototype = {
 
 		this._element.style.backgroundColor = this.color;
 		this._slider.draw();
-	},
+	}
 
 	remove() {
 		this._element.removeEventListener('click', this.onClick);
 		this._element.remove();
 	}
 
-};
+}
+
+export default SliderHandler;

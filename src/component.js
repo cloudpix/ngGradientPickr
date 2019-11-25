@@ -1,7 +1,7 @@
 'use strict';
 
 import * as $ from 'jquery';
-import {GradientSlider} from './slider';
+import GradientSlider from './slider';
 import './assets/style.css';
 
 export function register() {
