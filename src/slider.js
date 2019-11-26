@@ -126,11 +126,27 @@ class GradientSlider {
 
 	draw() {
 
+		//draw grid.
+		const canvasWidth = this._canvasContext.canvas.width,
+			canvasHeight = this._canvasContext.canvas.height;
+
+		let step = 0;
+		for (let x = 0; x <= canvasWidth; x += 5) {
+			for (let y = 0; y <= canvasHeight; y += 5) {
+
+				this._canvasContext.fillStyle = step % 2 !== 0 ? '#CECECE' : '#FFFFFF';
+				this._canvasContext.fillRect(x, y, 5, 5);
+
+				step++;
+			}
+		}
+
+		//draw gradients.
 		this.handles.sort(positionComparator);
 
 		const gradient = this.isHorizontal() ?
-			this._canvasContext.createLinearGradient(0, 0, this._canvasContext.canvas.width, 0) :
-			this._canvasContext.createLinearGradient(0, 0, 0, this._canvasContext.canvas.height);
+			this._canvasContext.createLinearGradient(0, 0, canvasWidth, 0) :
+			this._canvasContext.createLinearGradient(0, 0, 0, canvasHeight);
 
 		const stops = this.handles.map(handle => {
 			gradient.addColorStop(range(handle.position, 0, 1), handle.color);
@@ -141,7 +157,7 @@ class GradientSlider {
 		});
 
 		this._canvasContext.fillStyle = gradient;
-		this._canvasContext.fillRect(0, 0, this._canvasContext.canvas.width, this._canvasContext.canvas.height);
+		this._canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
 
 		(typeof this._options.change === 'function') && this._options.change(stops, this._options.generateStyles ? this._generateStyles() : null);
 	}
