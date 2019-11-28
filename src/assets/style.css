@@ -6,6 +6,12 @@
     margin: 4px;
 }
 
+.gdpickr-root.disabled,
+.gdpickr-root.disabled * {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .gdpickr-root.gdpickr-vertical {
     width: 20px;
     height: 200px;

@@ -48,17 +48,43 @@ class GradientSlider {
 		this._canvas.addEventListener('click', this.onClick);
 		this._handlesContainerElement.addEventListener('click', this.onClick);
 
+		this.isDisabled() && this.disable();
+
 		this.draw = bind(this.draw, this);
+
+		this._init = bind(this._init, this);
+		this._init();
+	}
+
+	_init() {
+
+		if (!this._element.clientWidth) return requestAnimationFrame(this._init);
+
+		this._canvas.width = this._element.clientWidth;
+		this._canvas.height = this._element.clientHeight;
+
+		this.handles.forEach(h => h.uploadElementPosition());
+
 		this.draw();
 	}
 
 	_buildOptions(options) {
 
+		//try to parse FabricJS colorStops.
+		const stops = options && options.stops ?
+			Array.isArray(options.stops) ? options.stops :
+				Object.entries(options.stops).map(stop => ({
+					position: `${stop[0] * 100}%`,
+					color: stop[1]
+				})) : null;
+
 		this._options = Object.assign({}, {
 			type: 'linear',
 			orientation: 'horizontal',
 			direction: 'left',
-			generateStyles: true,
+			generateFabricjsColorStops: false,
+			generateStyles: false,
+			disabled: false,
 			stops: [{
 				color: 'rgba(255,255,255,1)',
 				position: '0%'
@@ -66,9 +92,9 @@ class GradientSlider {
 				color: 'rgba(0,0,0,1)',
 				position: '100%'
 			}],
-			change: (stops, styles) => {
+			change: (instance, stops, fabricjsColorStops, styles) => {
 			},
-		}, options);
+		}, options, {stops});
 	}
 
 	getElement() {
@@ -118,7 +144,7 @@ class GradientSlider {
 
 	updateOptions(options) {
 
-		Object.assign(this._options, options);
+		this._buildOptions(Object.assign(this._options, options));
 
 		this._rebuild();
 		this.draw();
@@ -149,9 +175,9 @@ class GradientSlider {
 			this._canvasContext.createLinearGradient(0, 0, 0, canvasHeight);
 
 		const stops = this.handles.map(handle => {
-			gradient.addColorStop(range(handle.position, 0, 1), handle.color);
+			gradient.addColorStop(range(handle.position || 0, 0, 1), handle.color);
 			return {
-				position: handle.position,
+				position: `${handle.position * 100}%`,
 				color: handle.color
 			};
 		});
@@ -159,7 +185,9 @@ class GradientSlider {
 		this._canvasContext.fillStyle = gradient;
 		this._canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
 
-		(typeof this._options.change === 'function') && this._options.change(stops, this._options.generateStyles ? this._generateStyles() : null);
+		(typeof this._options.change === 'function') && this._options.change(this, stops,
+			this._options.generateFabricjsColorStops ? this._generateFabricjsColorStops() : null,
+			this._options.generateStyles ? this._generateStyles() : null);
 	}
 
 	_removeHandles() {
@@ -216,8 +244,28 @@ class GradientSlider {
 		return prefix.length ? [style, `${prefix}${style}`] : style;
 	}
 
+	_generateFabricjsColorStops() {
+		const stops = {};
+		this.handles.forEach(stop => stops[stop.position] = stop.color);
+		return stops;
+	}
+
 	isHorizontal() {
 		return this._options && this._options.orientation === 'horizontal';
+	}
+
+	enable() {
+		this._options.disabled = false;
+		this._element.classList.remove('disabled');
+	}
+
+	disable() {
+		this._options.disabled = true;
+		this._element.classList.add('disabled');
+	}
+
+	isDisabled() {
+		return this._options.disabled;
 	}
 
 }

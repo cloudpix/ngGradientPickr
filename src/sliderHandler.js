@@ -21,6 +21,7 @@ class SliderHandler {
 		this._element.classList.add('gdpickr-handler');
 		this._slider.getHandlesContainerElement().append(this._element);
 
+		this.uploadElementPosition = bind(this.uploadElementPosition, this);
 		this._updatePosition = bind(this._updatePosition, this);
 		this.onClick = bind(this.onClick, this);
 		this.onColorChange = bind(this.onColorChange, this);
@@ -30,14 +31,19 @@ class SliderHandler {
 
 		this._element.style.backgroundColor = this.color;
 		this._element.style.position = 'absolute';
-		this._slider.isHorizontal() ?
-			(this._element.style.left = `${(this._slider.getWidth() - this._element.offsetWidth) * (this.position)}px`) :
-			(this._element.style.top = `${(this._slider.getHeight() - this._element.offsetHeight) * (this.position)}px`);
+
+		this.uploadElementPosition();
 
 		this._element.addEventListener('click', this.onClick);
 		this._element.addEventListener('mousemove', this.onMouseMove);
 		this._element.addEventListener('mousedown', this.onMouseDown);
 		this._element.addEventListener('mouseup', this.onMouseUp);
+	}
+
+	uploadElementPosition() {
+		this._slider.isHorizontal() ?
+			(this._element.style.left = `${(this._slider.getWidth() - this._element.offsetWidth) * (this.position)}px`) :
+			(this._element.style.top = `${(this._slider.getHeight() - this._element.offsetHeight) * (this.position)}px`);
 	}
 
 	_updatePosition() {
