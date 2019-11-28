@@ -85,6 +85,7 @@ class GradientSlider {
 			generateFabricjsColorStops: false,
 			generateStyles: false,
 			disabled: false,
+			fixedColorPicker: false,
 			stops: [{
 				color: 'rgba(255,255,255,1)',
 				position: '0%'
@@ -252,6 +253,10 @@ class GradientSlider {
 
 	isHorizontal() {
 		return this._options && this._options.orientation === 'horizontal';
+	}
+
+	isFixedColorPicker() {
+		return this._options && this._options.fixedColorPicker;
 	}
 
 	enable() {

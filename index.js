@@ -13,6 +13,7 @@ import GradientSlider from 'ngGradientPickr/src/slider';
 			direction: '<',
 			generateFabricjsColorStops: '<',
 			generateStyles: '<',
+			fixedColorPicker: '<',
 			disabled: '<',
 			colorStops: '<',
 			onChange: '&'
@@ -40,6 +41,7 @@ import GradientSlider from 'ngGradientPickr/src/slider';
 			generateFabricjsColorStops: vm.generateFabricjsColorStops !== undefined ? vm.generateFabricjsColorStops : false,
 			generateStyles: vm.generateStyles !== undefined ? vm.generateStyles : false,
 			disabled: vm.disabled !== undefined ? vm.disabled : false,
+			fixedColorPicker: vm.fixedColorPicker !== undefined ? vm.fixedColorPicker : false,
 			stops: vm.colorStops || [],
 			change: (instance, stops, fabricjsColorStops, styles) => {
 				(vm.onChange !== null) && (typeof vm.onChange === 'function') && vm.onChange({

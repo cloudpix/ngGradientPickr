@@ -31,3 +31,12 @@ export function getOffset(el) {
 export function range(value, min, max) {
 	return Math.max(Math.min(max, value), min);
 }
+
+export function preventEventPropagation(event) {
+
+	if (!event) return;
+
+	event.preventDefault && event.preventDefault();
+	event.stopPropagation && event.stopPropagation();
+	event.stopImmediatePropagation && event.stopImmediatePropagation();
+}
