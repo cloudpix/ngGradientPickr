@@ -18,10 +18,14 @@ class GradientSlider {
 
 		this._buildOptions(options);
 
+		this._rootElement = document.createElement('div');
+		this._rootElement.classList.add('gdpickr-root');
+		this._rootElement.classList.add(`gdpickr-${options.orientation}`);
+		parentElement.append(this._rootElement);
+
 		this._element = document.createElement('div');
-		this._element.classList.add('gdpickr-root');
-		this._element.classList.add(`gdpickr-${options.orientation}`);
-		parentElement.append(this._element);
+		this._element.classList.add('gdpickr-slider-holder');
+		this._rootElement.append(this._element);
 
 		this._canvas = document.createElement('canvas');
 		this._canvas.classList.add('gdpickr-slider');
@@ -98,6 +102,10 @@ class GradientSlider {
 		}, options, {stops});
 	}
 
+	getRootElement() {
+		return this._rootElement;
+	}
+
 	getElement() {
 		return this._element;
 	}
@@ -140,7 +148,7 @@ class GradientSlider {
 
 		document.removeEventListener('click', this.onDocumentClick);
 
-		this._element.parentElement.removeChild(this._element);
+		this._rootElement.parentElement.removeChild(this._rootElement);
 	}
 
 	updateOptions(options) {

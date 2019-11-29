@@ -18,7 +18,7 @@ import GradientSlider from 'ngGradientPickr/src/slider';
 			colorStops: '<',
 			onChange: '&'
 		},
-		template: `<div></div>`,
+		template: ``,
 		controller: NgGradientPickerController,
 		controllerAs: 'vm'
 	});
@@ -28,7 +28,7 @@ import GradientSlider from 'ngGradientPickr/src/slider';
 	function NgGradientPickerController($element, $log) {
 
 		const vm = this;
-		const el = $element[0].firstElementChild;
+		const el = $element[0];
 
 		let gradientSlider = null;
 

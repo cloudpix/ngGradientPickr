@@ -120,12 +120,9 @@ class SliderHandler {
 
 	onClick(e) {
 
-		if (this._slider.getColorPicker().isVisible() &&
-			(this === this._slider.getColorPicker().getHandler())) {
-			this.hideColorPicker();
-		} else {
+		this._slider.getColorPicker().isVisible() && (this === this._slider.getColorPicker().getHandler()) ?
+			this.hideColorPicker() :
 			this.showColorPicker();
-		}
 
 		e.stopPropagation();
 		e.preventDefault();

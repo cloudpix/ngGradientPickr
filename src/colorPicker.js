@@ -13,25 +13,30 @@ class ColorPicker {
 	constructor(slider) {
 
 		this._slider = slider;
+		this._visible = 'hidden';
+		this._pickrEventBindings = [];
 
 		this._element = document.createElement('div');
 		this._element.classList.add('gdpickr-color-pickr');
-		this._element.style.visibility = 'hidden';
+		this._element.style.display = 'none';
+		this._element.classList.add(this._slider.isFixedColorPicker() ? 'fixed' : 'float');
 
-		this._slider.getElement().append(this._element);
+		this._slider.getRootElement().append(this._element);
 
 		const pickrElement = document.createElement('div');
+		this._pickrElement = pickrElement;
 		this._element.append(pickrElement);
 
 		this.onColorChange = bind(this.onColorChange, this);
 		this.onCloseClick = bind(this.hide, this);
 		this.onRemoveClick = bind(this.onRemoveClick, this);
 
-		this._visible = false;
+		this._initPickr = bind(this._initPickr, this);
+		this._initPickr();
+	}
 
-		this._pickrEventBindings = [];
+	_initPickr() {
 
-		this._pickrElement = pickrElement;
 		this._pickr = Pickr.create({
 			el: this._pickrElement,
 			theme: 'nano',
@@ -56,37 +61,46 @@ class ColorPicker {
 				save: 'Close',
 				clear: 'Remove'
 			}
-		}).on('init', instance => this._pickrEventBindings = this._registerPreventEvents(instance))
-			.on('change', color => this.onColorChange(color.toHEXA().toString()))
-			.on('save', () => this.onCloseClick(true))
+		}).on('show', () => {
+
+			this._visible = 'visible';
+			this._element.style.display = null;
+
+		}).on('hide', () => {
+
+			this._visible = 'hidden';
+			this._element.style.display = 'none';
+
+		}).on('change', color => this.onColorChange(color.toHEXA().toString()))
+			.on('save', () => this.onCloseClick())
 			.on('clear', () => this.onRemoveClick());
+
+		this._pickrEventBindings = this._registerPreventEvents(this._pickr);
 	}
 
 	isVisible() {
-		return this._visible;
+		return this._visible === 'visible';
 	}
 
 	show(position, color, sliderHandler) {
 
-		this._visible = true;
+		this._visible = 'changing';
 		this._handler = sliderHandler;
-
-		this._element.style.visibility = 'visible';
 
 		this._slider.isHorizontal() ?
 			this._element.style.left = `${this._slider.isFixedColorPicker() ? 0 : position.left}px` :
 			this._element.style.top = `${this._slider.isFixedColorPicker() ? 0 : position.top}px`;
 
-		this._pickr.setColor(color, true);
+		!this.getColors().find(c => c === color) && this._pickr.setColor(color, true);
+
 		this._pickr.show();
 	}
 
-	hide(force) {
+	hide() {
 
-		if (!this._visible && !force) return;
+		if (this._visible === 'changing') return;
 
-		this._visible = false;
-		this._element.style.visibility = 'hidden';
+		this._visible = 'changing';
 		this._pickr.hide();
 	}
 
@@ -95,7 +109,7 @@ class ColorPicker {
 	}
 
 	onColorChange(color) {
-		this._handler.onColorChange(color);
+		this._handler && this._handler.onColorChange(color);
 	}
 
 	onRemoveClick() {
@@ -121,6 +135,7 @@ class ColorPicker {
 		root.hue && root.hue.slider && root.hue.slider.parentElement && elements.push(root.hue.slider.parentElement);
 		root.opacity && root.opacity.picker && elements.push(root.opacity.picker);
 		root.opacity && root.opacity.slider && root.opacity.slider.parentElement && elements.push(root.opacity.slider.parentElement);
+		root.interaction && root.interaction.options && root.interaction.options.forEach(el => elements.push(el));
 
 		return elements.map(element => {
 
@@ -139,6 +154,17 @@ class ColorPicker {
 
 		this._pickrEventBindings.forEach(e => e.element.removeEventListener(e.event, e.fun));
 		this._pickrEventBindings = [];
+	}
+
+	getColors() {
+		const color = this._pickr && this._pickr.getColor();
+		return !color ? [] : [
+			color.toHSVA().toString(0),
+			color.toHSLA().toString(0),
+			color.toRGBA().toString(0),
+			color.toHEXA().toString(0),
+			color.toCMYK().toString(0),
+		];
 	}
 
 }
