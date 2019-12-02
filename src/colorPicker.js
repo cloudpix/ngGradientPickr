@@ -71,9 +71,33 @@ class ColorPicker {
 			this._visible = 'hidden';
 			this._element.style.display = 'none';
 
-		}).on('change', color => this.onColorChange(color.toHEXA().toString()))
-			.on('save', () => this.onCloseClick())
-			.on('clear', () => this.onRemoveClick());
+		}).on('change', (color, instance) => {
+
+			const dolly = color.clone();
+
+			if (isNaN(dolly.h)) {
+				dolly.h = instance.getSelectedColor().h;
+			}
+			if (isNaN(dolly.s)) {
+				dolly.s = instance.getSelectedColor().s;
+			}
+			if (isNaN(dolly.v)) {
+				dolly.v = instance.getSelectedColor().v;
+			}
+			if (isNaN(dolly.a)) {
+				dolly.a = instance.getSelectedColor().a;
+			}
+
+			instance.setHSVA(dolly.h, dolly.s, dolly.v, dolly.a, true);
+			instance.applyColor(true);
+
+			this.onColorChange(instance.getColor().toRGBA().toString());
+
+		}).on('save', color => {
+
+			this.onCloseClick();
+
+		}).on('clear', () => this.onRemoveClick());
 
 		this._pickrEventBindings = this._registerPreventEvents(this._pickr);
 	}
@@ -91,7 +115,11 @@ class ColorPicker {
 			this._element.style.left = `${this._slider.isFixedColorPicker() ? 0 : position.left}px` :
 			this._element.style.top = `${this._slider.isFixedColorPicker() ? 0 : position.top}px`;
 
-		!this.getColors().find(c => c === color) && this._pickr.setColor(color, true);
+		if (!this.getColors().find(c => c === color)) {
+
+			this._pickr.setColor(color, true);
+			this._pickr.applyColor(true);
+		}
 
 		this._pickr.show();
 	}

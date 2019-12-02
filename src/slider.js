@@ -67,7 +67,7 @@ class GradientSlider {
 		this._canvas.width = this._element.clientWidth;
 		this._canvas.height = this._element.clientHeight;
 
-		this.handles.forEach(h => h.uploadElementPosition());
+		this._handles.forEach(h => h.uploadElementPosition());
 
 		this.draw();
 	}
@@ -159,7 +159,10 @@ class GradientSlider {
 		this.draw();
 	}
 
-	draw() {
+	draw(handler) {
+
+		//re-add handler if it was necessary.
+		handler && !this._handles.includes(handler) && this._handles.push(handler);
 
 		//draw grid.
 		const canvasWidth = this._canvasContext.canvas.width,
@@ -177,13 +180,13 @@ class GradientSlider {
 		}
 
 		//draw gradients.
-		this.handles.sort(positionComparator);
+		this._handles.sort(positionComparator);
 
 		const gradient = this.isHorizontal() ?
 			this._canvasContext.createLinearGradient(0, 0, canvasWidth, 0) :
 			this._canvasContext.createLinearGradient(0, 0, 0, canvasHeight);
 
-		const stops = this.handles.map(handle => {
+		const stops = this._handles.map(handle => {
 			gradient.addColorStop(range(handle.position || 0, 0, 1), handle.color);
 			return {
 				position: `${handle.position * 100}%`,
@@ -200,8 +203,8 @@ class GradientSlider {
 	}
 
 	_removeHandles() {
-		this.handles && this.handles.forEach(handler => this.removeHandle(handler));
-		this.handles = [];
+		this._handles && this._handles.forEach(handler => this.removeHandle(handler));
+		this._handles = [];
 	}
 
 	_rebuild() {
@@ -211,16 +214,16 @@ class GradientSlider {
 		this._colorPicker && this._colorPicker.destroy();
 		this._colorPicker = new ColorPicker(this);
 
-		this._options.stops.forEach(stop => this.handles.push(this.createHandler(stop.color, stop.position)));
+		this._options.stops.forEach(stop => this._handles.push(this.createHandler(stop.color, stop.position)));
 	}
 
 	removeHandle(handler, reDraw) {
 
-		const idx = this.handles.indexOf(handler);
+		const idx = this._handles.indexOf(handler);
 
 		if (idx === -1) return;
 
-		this.handles.splice(idx, 1);
+		this._handles.splice(idx, 1);
 		handler.remove();
 
 		reDraw && this.draw();
@@ -240,8 +243,8 @@ class GradientSlider {
 		const handler = this.createHandler(color, this.isHorizontal() ?
 			(x / this._canvasContext.canvas.width) : (y / this._canvasContext.canvas.height));
 
-		this.handles.push(handler);
-		this.handles.sort(positionComparator);
+		this._handles.push(handler);
+		this._handles.sort(positionComparator);
 
 		handler.showColorPicker();
 
@@ -249,13 +252,13 @@ class GradientSlider {
 	}
 
 	_generateStyles() {
-		const style = `${this._options.type}-gradient(${(this._options.type === 'linear') ? (this._options.direction + ', ') : ''}${this.handles.map(handle => `${handle.color} ${(handle.position * 100) || 0}%`).join(', ')})`;
+		const style = `${this._options.type}-gradient(${(this._options.type === 'linear') ? (this._options.direction + ', ') : ''}${this._handles.map(handle => `${handle.color} ${(handle.position * 100) || 0}%`).join(', ')})`;
 		return prefix.length ? [style, `${prefix}${style}`] : style;
 	}
 
 	_generateFabricjsColorStops() {
 		const stops = {};
-		this.handles.forEach(stop => stops[stop.position] = stop.color);
+		this._handles.forEach(stop => stops[stop.position] = stop.color);
 		return stops;
 	}
 

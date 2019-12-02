@@ -69,7 +69,7 @@ class SliderHandler {
 			}, undefined, 2)}`);
 		}
 
-		this._slider.draw();
+		this._slider.draw(this);
 	}
 
 	isDragging() {
