@@ -187,7 +187,7 @@ class GradientSlider {
 			this._canvasContext.createLinearGradient(0, 0, 0, canvasHeight);
 
 		const stops = this._handles.map(handle => {
-			gradient.addColorStop(range(handle.position || 0, 0, 1), handle.color);
+			(handle.color + '').trim().length && gradient.addColorStop(range(handle.position || 0, 0, 1), handle.color);
 			return {
 				position: `${handle.position * 100}%`,
 				color: handle.color

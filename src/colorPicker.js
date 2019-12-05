@@ -163,6 +163,7 @@ class ColorPicker {
 		root.hue && root.hue.slider && root.hue.slider.parentElement && elements.push(root.hue.slider.parentElement);
 		root.opacity && root.opacity.picker && elements.push(root.opacity.picker);
 		root.opacity && root.opacity.slider && root.opacity.slider.parentElement && elements.push(root.opacity.slider.parentElement);
+		root.interaction && root.interaction.result && elements.push(root.interaction.result);
 		root.interaction && root.interaction.options && root.interaction.options.forEach(el => elements.push(el));
 
 		return elements.map(element => {
